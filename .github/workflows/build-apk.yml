@@ -25,24 +25,24 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
-      - name: Generate Gradle Wrapper
+      - name: Accept Android SDK Licenses
         run: |
-          gradle wrapper --gradle-version 8.5
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
-
-      - name: Build Debug & Release APK
+      - name: Build Debug APK
         run: |
-          ./gradlew assembleDebug --stacktrace
+          gradle assembleDebug --stacktrace
 
-      - name: Copy and Rename APK
+      - name: Prepare Release APK Artifact
         run: |
           mkdir -p release-apks
           find app/build/outputs/apk/ -name "*.apk" -exec cp {} release-apks/CarVoiceAssistant-v1.0.0.apk \;
+          ls -la release-apks/
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
@@ -73,3 +73,4 @@ jobs:
             - **معقم الصوت Piper TTS:** تنقية الماركداون والرموز التعبيرية وتحويل الرموز لكلمات عربية فصيحة.
             - **منتقي النماذج:** اختيار ملفات `.gguf` من ذاكرة التخزين ديناميكياً.
           files: release-apks/CarVoiceAssistant-v1.0.0.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
