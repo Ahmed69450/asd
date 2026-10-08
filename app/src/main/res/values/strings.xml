@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">المساعد الصوتي الهجين للسيارة</string>
+    <string name="settings_title">إعدادات المساعد الصوتي</string>
+    <string name="status_idle">جاهز، بانتظار أمرك أو كلمة التنبيه ("يا سيارة")</string>
+    <string name="status_listening">جاري الاستماع...</string>
+    <string name="status_processing">جاري المعالجة...</string>
+    <string name="status_speaking">المساعد يتحدث...</string>
+    <string name="btn_mic_hint">اضغط للتحدث أو نادِ: يا سيارة</string>
+    <string name="btn_send">إرسال</string>
+    <string name="prompt_hint">أو اكتب طلبك هنا...</string>
+    <string name="btn_settings">الإعدادات</string>
+    <string name="accessibility_service_description">خدمة قراءة شاشة السيارة لتمكين المساعد من رؤية التطبيق النشط عبر بروتوكول MCP.</string>
+    <string name="notification_channel_name">خدمة الاستماع الدائم للسيارة</string>
+    <string name="notification_channel_desc">تشغيل خدمة الاستماع لكلمة التنبيه في خلفية نظام السيارة</string>
+    <string name="notification_title">مساعد BYD الصوتي نشط</string>
+    <string name="notification_text">المساعد يستمع في الخلفية لكلمة التنبيه</string>
+    <string name="pref_select_model">اختيار نموذج GGUF من التخزين</string>
+    <string name="pref_no_model_selected">لم يتم اختيار أي نموذج بعد</string>
+    <string name="pref_cpu_threads">عدد أنوية المعالج للنموذج (CPU Threads)</string>
+    <string name="pref_speech_rate">سرعة نطق الصوت (Piper TTS)</string>
+</resources>
