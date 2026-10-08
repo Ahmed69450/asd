@@ -36,7 +36,7 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          gradle assembleDebug --stacktrace
+          gradle assembleDebug --stacktrace 2>&1 | tee build_output.log
 
       - name: Prepare Release APK Artifact
         run: |
@@ -74,3 +74,10 @@ jobs:
             - **منتقي النماذج:** اختيار ملفات `.gguf` من ذاكرة التخزين ديناميكياً.
           files: release-apks/CarVoiceAssistant-v1.0.0.apk
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: build_output.log
