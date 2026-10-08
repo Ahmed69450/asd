@@ -1,4 +1,4 @@
-name: Build & Release Android APK
+name: Build Android APK and Publish Release
 
 on:
   push:
@@ -7,15 +7,16 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build APK and Create Release
+    name: Build APK & Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -24,34 +25,51 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle 8.4
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
-
-      - name: Rename APK for Release
+      - name: Generate Gradle Wrapper
         run: |
-          mkdir -p build-artifacts
-          cp app/build/outputs/apk/debug/app-debug.apk build-artifacts/byd-voice-assistant-v1.0.0.apk
+          gradle wrapper --gradle-version 8.5
 
-      - name: Upload APK Artifact
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug & Release APK
+        run: |
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Copy and Rename APK
+        run: |
+          mkdir -p release-apks
+          find app/build/outputs/apk/ -name "*.apk" -exec cp {} release-apks/CarVoiceAssistant-v1.0.0.apk \;
+
+      - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: byd-voice-assistant-v1.0.0.apk
-          path: build-artifacts/byd-voice-assistant-v1.0.0.apk
+          name: CarVoiceAssistant-v1.0.0
+          path: release-apks/CarVoiceAssistant-v1.0.0.apk
 
-      - name: Create GitHub Release v1.0.0
-        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+      - name: Publish GitHub Release v1.0.0
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "BYD Offline Voice Assistant v1.0.0"
+          tag_name: v1.0.0
+          name: "Car Voice Assistant v1.0.0"
           draft: false
           prerelease: false
-          generate_release_notes: true
-          files: build-artifacts/byd-voice-assistant-v1.0.0.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            ## المساعد الصوتي الهجين لشاشات سيارات BYD DiLink - الإصدار 1.0.0
+            
+            ### المميزات المضمنة في هذا الإصدار:
+            - **معمارية أصلية 100% بلغة Kotlin:** بدون أي بيئة بايثون (Zero Python Runtime Overhead).
+            - **العقل الهجين ثنائي المحركات:**
+              - **المحرك A (موجه العتاد السريع):** ONNX Runtime 384D مع عتبة ثقة ≥ 70% لتنفيذ أوامر السيارة في أقل من 20ms.
+              - **المحرك B (النموذج اللغوي الاحتياطي):** غلاف llama.cpp لنماذج GGUF مقيد بـ 2 إلى 3 أنوية معالج.
+            - **الاستماع المستمر في الخلفية:** Foreground Service مع Vosk Wake Word ("يا سيارة").
+            - **التحكم بعتاد السيارة:** نوايا التكييف، النوافذ، فتحة السقف، ومستوى الصوت وخفض صوت الوسائط (Audio Ducking).
+            - **بروتوكول سياق النماذج (MCP):** أداة البحث المباشر في الويب وأداة قراءة الشاشة عبر AccessibilityService.
+            - **السياق اللحظي والذاكرة:** موقع GPS دقيق عبر FusedLocationProvider وقاعدة بيانات Room للذاكرة RAG.
+            - **معقم الصوت Piper TTS:** تنقية الماركداون والرموز التعبيرية وتحويل الرموز لكلمات عربية فصيحة.
+            - **منتقي النماذج:** اختيار ملفات `.gguf` من ذاكرة التخزين ديناميكياً.
+          files: release-apks/CarVoiceAssistant-v1.0.0.apk
